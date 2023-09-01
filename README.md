@@ -1,1 +1,1 @@
-# simulacao_cinetica_quimica
+# Cinética Química 
