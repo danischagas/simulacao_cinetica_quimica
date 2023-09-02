@@ -10,7 +10,7 @@
 
   <hr>
   
-<div align="justify"> O presente repositório destina-se ao projeto a ser desenvolvido na disciplina de Cinética Química, no quarto período do Bacharelado em Ciência e Tecnologia da Ilum Escola de Ciência. O problema central da disciplina será uma simulação computacional, e deverá ser desenvolvido em 3 etapas. Ao concluir cada etapa os grupos deverão apresentar um entregável em formato de artigo científico.
+<div align="justify"> O presente repositório destina-se ao projeto a ser desenvolvido na disciplina de Cinética Química, no quarto período do Bacharelado em Ciência e Tecnologia da Ilum Escola de Ciência. O problema central da disciplina será uma simulação computacional, e deverá ser desenvolvido em 3 etapas. Ao concluir cada etapa os grupos deverão apresentar um entregável em formato de artigo científico. As alunas responsáveis são: Danielle Chagas e Débora van Putten Chaves.
   
   
 <br>  Segundo as instruções do professor, as etapas designadas consistem em:
