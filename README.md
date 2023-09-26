@@ -24,7 +24,7 @@
 
 <br> 2. **Definição da reação química e as leis de velocidade**
 <br> Nesse desafio os grupos deverão considerar que as partículas definidas no desafio anterior (reagentes) podem ser convertidas em um outro tipo de partícula (produto), o que caracterizaria uma reação química. Essa conversão deve obedecer leis de velocidade de conversão, as quais são definidas experimentalmente. As leis são equações diferenciais que dependem da concentração dos reagentes e também de uma constante específica, a ordem da reação. 
-> Status: `AINDA NÃO INICIADA`
+> Status: `EM ANDAMENTO`
 
 > <hr> 
 
