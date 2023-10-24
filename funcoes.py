@@ -12,7 +12,7 @@ from itertools import combinations
 class Particula:
     """Define physics of elastic colisao."""
     
-    def __init__(self, massa, raio, posicao, velocidade):
+    def __init__(self, massa, raio, posicao, velocidade, tipo = 'atomo'):
         """Initialize a Particle object
         
         massa the massa of particle
@@ -20,9 +20,9 @@ class Particula:
         posicao the posicao vector of particle
         velocidade the velocidade vector of particle
         """
+        self.tipo = tipo
         self.massa = massa
         self.raio = raio
-        self.tipo = 'atomo'
         
         # last posicao and velocidade
         self.posicao = np.array(posicao)
@@ -47,10 +47,14 @@ class Particula:
         x1, x2 = self.posicao, particle.posicao
         di = x2-x1
         norm = np.linalg.norm(di)
+
         if norm-(r1+r2)*1.1 < 0:
             return True
         else:
             return False
+        
+#         return np.hypot(*(self.raio*2-particle.raio*2)) < self.raio*2 + particle.raio*2
+
 
     def realiza_colisao(self, particle, passo):
         """Compute velocidade after colisao with another particle."""
@@ -78,11 +82,11 @@ class Particula:
         if abs(x[1])-r < projy or abs(size-x[1])-r < projy:
             self.velocidade[1] *= -1.
             
-######################################################################################################################################################################
-#                                                                                                                                                                    #
-#                                                                    Funções                                                                                         #
-#                                                                                                                                                                    #
-######################################################################################################################################################################
+######################################################################################################################################################
+#                                                                                                                                                    #
+#                                                                    Funções                                                                         #
+#                                                                                                                                                    #
+######################################################################################################################################################
 
 def mudar_passo(lista_particulas, passo, size):
     """Solve a passo for every particle."""
@@ -99,7 +103,7 @@ def mudar_passo(lista_particulas, passo, size):
         particula.prox_passo(passo)
 
 
-def gerar_particulas(N, raio, massa, tamanho_caixa):
+def gerar_particulas(N, raio, massa, tamanho_caixa, tipo):
     """Generate N Particle objects in a random way in a list."""
     lista_particulas = []
 
@@ -114,7 +118,7 @@ def gerar_particulas(N, raio, massa, tamanho_caixa):
             
             colisao = False
             pos = raio + np.random.rand(2)*(tamanho_caixa-2*raio) 
-            nova_particula = Particula(massa, raio, pos, v)
+            nova_particula = Particula(massa, raio, pos, v, tipo)
             for j in range(len(lista_particulas)):
 
                 colisao = nova_particula.checar_colisão( lista_particulas[j] )
@@ -125,11 +129,20 @@ def gerar_particulas(N, raio, massa, tamanho_caixa):
         lista_particulas.append(nova_particula)
     return lista_particulas
 
+#########################################################################################################################################################
+#                                                                                                                                                       #
+#                                                                    Reação                                                                             #
+#                                                                                                                                                       #
+#########################################################################################################################################################
 
-def simular_colisao(lista_particulas, probabilidade_reacao):
+
+def simular_reacao(lista_particulas, probabilidade_reacao):    
     for particula1, particula2 in combinations(lista_particulas, 2):
+                
         if particula1.checar_colisão(particula2) and particula1.tipo == 'atomo' and particula2.tipo == 'atomo':
-            valor_aleatorio = rd.random()
+
+#             valor_aleatorio = rd.random()
+            valor_aleatorio = 0
 
             if valor_aleatorio < probabilidade_reacao:
                 nova_massa = particula1.massa + particula2.massa
