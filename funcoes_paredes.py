@@ -69,7 +69,7 @@ class Particula:
             particle.velocidade = v2 - 2. * m1/(m2+m1) * np.dot(v2-v1, (-di)) / (np.linalg.norm(di)**2.) * (-di)
             
 
-    def colisao_paredes(self, passo, size):
+    def colisao_paredes(self, passo, size, probabilidade_reacao_paredes):
         """Compute velocidade after hitting an edge.
         passo the computation passo
         size the medium size
@@ -79,10 +79,14 @@ class Particula:
         projy = passo*abs(np.dot(v,np.array([0.,1.])))
         if abs(x[0])-r < projx or abs(size-x[0])-r < projx:
             self.velocidade[0] *= -1
+            probabilidade_reacao_paredes *= 0.8  
 
             
         if abs(x[1])-r < projy or abs(size-x[1])-r < projy:
             self.velocidade[1] *= -1.
+            probabilidade_reacao_paredes *= 0.8  
+
+        return probabilidade_reacao_paredes
 
             
        
@@ -93,12 +97,12 @@ class Particula:
 #                                                                                                                                                    #
 ######################################################################################################################################################
 
-def mudar_passo(lista_particulas, passo, size):
+def mudar_passo(lista_particulas, passo, size, probabilidade_reacao):
     """Solve a passo for every particle."""
     
     # Detect edge-hitting and colisao of every particle
     for i in range(len(lista_particulas)):
-        lista_particulas[i].colisao_paredes(passo,size)
+        lista_particulas[i].colisao_paredes(passo,size, probabilidade_reacao)
         for j in range(i+1,len(lista_particulas)):
                 lista_particulas[i].realiza_colisao(lista_particulas[j],passo)    
 
@@ -107,6 +111,8 @@ def mudar_passo(lista_particulas, passo, size):
     for particula in lista_particulas:
         particula.prox_passo(passo)
         
+        probabilidade_reacao = particula.colisao_paredes(passo, size, probabilidade_reacao)
+
 
 
 

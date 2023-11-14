@@ -79,8 +79,13 @@ class Particula:
         projy = passo*abs(np.dot(v,np.array([0.,1.])))
         if abs(x[0])-r < projx or abs(size-x[0])-r < projx:
             self.velocidade[0] *= -1
+
+            
         if abs(x[1])-r < projy or abs(size-x[1])-r < projy:
             self.velocidade[1] *= -1.
+
+            
+       
             
 ######################################################################################################################################################
 #                                                                                                                                                    #
@@ -101,6 +106,8 @@ def mudar_passo(lista_particulas, passo, size):
     # Computa a posicao de todas particulas  
     for particula in lista_particulas:
         particula.prox_passo(passo)
+        
+
 
 
 def gerar_particulas(N, raio, massa, tamanho_caixa, tipo):
@@ -141,7 +148,6 @@ def simular_reacao(lista_particulas, probabilidade_reacao):
                 
         if particula1.checar_colisão(particula2) and particula1.tipo == 'atomo' and particula2.tipo == 'atomo':
 
-#             valor_aleatorio = rd.random()
             valor_aleatorio = 0
 
             if valor_aleatorio < probabilidade_reacao:
@@ -166,3 +172,162 @@ def simular_reacao(lista_particulas, probabilidade_reacao):
     else:
         # Não houve colisão
         return None   
+
+#########################################################################################################################################################
+#                                                                                                                                                       #
+#                                                                    Desafio 3                                                                          #
+#                                                                                                                                                       #
+#########################################################################################################################################################
+
+
+
+def gerar_particulas_dois_sistemas(N, raio, massa, tamanho_caixa, tipo):
+    """Generate N Particle objects in a random way in a list."""
+    lista_particulas_sistema1, lista_particulas_sistema2, lista_particulas_sistema3, lista_particulas_sistema4, lista_particulas_sistema5 = [], [], [], [], []
+
+    for i in range(N):
+        
+        magnitude_velocidade_sistema1 = np.random.rand(1)*25  # Velocidade para o primeiro sistema
+        magnitude_velocidade_sistema2 = np.random.rand(1)*50  # Velocidade para o segundo sistema
+        magnitude_velocidade_sistema3 = np.random.rand(1)*75  # Velocidade para o terceiro sistema
+        magnitude_velocidade_sistema4 = np.random.rand(1)*100  # Velocidade para o quarto sistema
+        magnitude_velocidade_sistema5 = np.random.rand(1)*125  # Velocidade para o quinto sistema
+        
+        
+        angulo_velocidade = np.random.rand(1)*2*np.pi
+        
+        v_sistema1 = np.append(magnitude_velocidade_sistema1 * np.cos(angulo_velocidade), magnitude_velocidade_sistema1 * np.sin(angulo_velocidade))
+        v_sistema2 = np.append(magnitude_velocidade_sistema2 * np.cos(angulo_velocidade), magnitude_velocidade_sistema2 * np.sin(angulo_velocidade))
+        v_sistema3 = np.append(magnitude_velocidade_sistema3 * np.cos(angulo_velocidade), magnitude_velocidade_sistema3 * np.sin(angulo_velocidade))
+        v_sistema4 = np.append(magnitude_velocidade_sistema4 * np.cos(angulo_velocidade), magnitude_velocidade_sistema4 * np.sin(angulo_velocidade))
+        v_sistema5 = np.append(magnitude_velocidade_sistema5 * np.cos(angulo_velocidade), magnitude_velocidade_sistema5 * np.sin(angulo_velocidade))
+
+        
+        pos = raio + np.random.rand(2)*(tamanho_caixa-2*raio) 
+        
+        nova_particula_sistema1 = Particula(massa, raio, pos, v_sistema1, tipo)
+        nova_particula_sistema2 = Particula(massa, raio, pos, v_sistema2, tipo)
+        nova_particula_sistema3 = Particula(massa, raio, pos, v_sistema3, tipo)
+        nova_particula_sistema4 = Particula(massa, raio, pos, v_sistema4, tipo)
+        nova_particula_sistema5 = Particula(massa, raio, pos, v_sistema5, tipo)
+
+        colisao_sistema1, colisao_sistema2, colisao_sistema3, colisao_sistema4, colisao_sistema5 = False, False, False, False, False
+        
+        for particula_sistema1 in lista_particulas_sistema1:
+            colisao_sistema1 = nova_particula_sistema1.checar_colisão(particula_sistema1)
+            if colisao_sistema1:
+                break
+                
+        for particula_sistema2 in lista_particulas_sistema2:
+            colisao_sistema2 = nova_particula_sistema2.checar_colisão(particula_sistema2)
+            if colisao_sistema2:
+                break
+                
+        for particula_sistema3 in lista_particulas_sistema3:
+            colisao_sistema3 = nova_particula_sistema3.checar_colisão(particula_sistema3)
+            if colisao_sistema3:
+                break
+
+        for particula_sistema4 in lista_particulas_sistema4:
+            colisao_sistema4 = nova_particula_sistema4.checar_colisão(particula_sistema4)
+            if colisao_sistema4:
+                break
+                
+        for particula_sistema5 in lista_particulas_sistema5:
+            colisao_sistema5 = nova_particula_sistema5.checar_colisão(particula_sistema5)
+            if colisao_sistema5:
+                break
+
+        if not colisao_sistema1:
+            lista_particulas_sistema1.append(nova_particula_sistema1)
+            
+        if not colisao_sistema2:
+            lista_particulas_sistema2.append(nova_particula_sistema2)
+            
+        if not colisao_sistema3:
+            lista_particulas_sistema3.append(nova_particula_sistema3)
+        
+        if not colisao_sistema4:
+            lista_particulas_sistema4.append(nova_particula_sistema4)
+            
+        if not colisao_sistema5:
+            lista_particulas_sistema5.append(nova_particula_sistema5)
+        
+    return lista_particulas_sistema1, lista_particulas_sistema2, lista_particulas_sistema3, lista_particulas_sistema4, lista_particulas_sistema5
+
+
+
+def exponencial(t, a, k, c):
+    return a * np.exp(-k * t) + c
+
+
+
+#########################################################################################################################################################
+#                                                                                                                                                       #
+#                                                                    Catalisador                                                                        #
+#                                                                                                                                                       #
+#########################################################################################################################################################
+
+
+
+
+# Classe Particula_Catalisador
+class Particula_Catalisador:
+    def __init__(self, massa, raio, posicao, velocidade, tipo='parede'):
+        self.tipo = tipo
+        self.massa = massa
+        self.raio = raio
+        self.posicao = np.array(posicao)
+        self.velocidade = np.array(velocidade)
+
+    def checar_colisao(self, particle):
+        r1, r2 = self.raio, particle.raio
+        x1, x2 = self.posicao, particle.posicao
+        di = x2 - x1
+        norm = np.linalg.norm(di)
+
+        if norm - (r1 + r2) * 1.1 < 0:
+            return True
+        else:
+            return False
+
+    def realiza_colisao(self, particle, passo):
+        m1, m2 = self.massa, particle.massa
+        r1, r2 = self.raio, particle.raio
+        v1, v2 = self.velocidade, particle.velocidade
+        x1, x2 = self.posicao, particle.posicao
+        di = x1 - x2
+        norm = np.linalg.norm(di)
+        
+        if norm - (r1 + r2) * 1.1 < passo * abs(np.dot(v1 - v2, di)) / norm:
+            self.velocidade = v1 - 2. * m2 / (m1 + m2) * np.dot(v1 - v2, di) / (np.linalg.norm(di) ** 2.) * di
+            particle.velocidade = v2 - 2. * m1 / (m2 + m1) * np.dot(v2 - v1, (-di)) / (np.linalg.norm(di) ** 2.) * (-di)
+
+    def colisao_paredes(self, passo, size):
+        r, v, x = self.raio, self.velocidade, self.posicao
+        projx = passo * abs(np.dot(v, np.array([1., 0.])))
+        projy = passo * abs(np.dot(v, np.array([0., 1.])))
+        if abs(x[0]) - r < projx or abs(size - x[0]) - r < projx:
+            self.velocidade[0] *= -1
+        if abs(x[1]) - r < projy or abs(size - x[1]) - r < projy:
+            self.velocidade[1] *= -1.
+
+# Função para verificar colisões com a parede
+def verifica_colisao_parede(particula, size):
+    r = particula.raio
+    x = particula.posicao
+    v = particula.velocidade
+    projx = abs(np.dot(v, np.array([1., 0.])))
+    projy = abs(np.dot(v, np.array([0., 1.])))
+
+    if abs(x[0]) - r < projx or abs(size - x[0]) - r < projx:
+        return True
+    if abs(x[1]) - r < projy or abs(size - x[1]) - r < projy:
+        return True
+    return False
+
+# Função para modificar a probabilidade de reação se a partícula colidir com a parede
+def mudar_probabilidade(particula, probabilidade, taxa_aumento):
+    if verifica_colisao_parede(particula, size):
+        probabilidade *= taxa_aumento
+    return probabilidade  
