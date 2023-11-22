@@ -23,6 +23,8 @@ class Particula:
         self.tipo = tipo
         self.massa = massa
         self.raio = raio
+        self.orientacao = self.calcular_orientacao()
+
         
         # last posicao and velocidade
         self.posicao = np.array(posicao)
@@ -32,6 +34,12 @@ class Particula:
         self.todas_posicoes = [np.copy(self.posicao)]
         self.todas_velocidades = [np.copy(self.velocidade)]
         self.todas_magnitudesv = [np.linalg.norm(np.copy(self.velocidade))]
+        
+        
+    def calcular_orientacao(self):
+        # Gere um vetor de orientação aleatório
+        angulo_orientacao = np.random.rand(1) * 2 * np.pi
+        return np.array([np.cos(angulo_orientacao), np.sin(angulo_orientacao)])
         
     def prox_passo(self, passo):
         """Compute posicao of next passo."""
@@ -91,25 +99,7 @@ class Particula:
 #                                                                                                                                                    #
 #                                                                    Funções                                                                         #
 #                                                                                                                                                    #
-######################################################################################################################################################
-
-def mudar_passo(lista_particulas, passo, size):
-    """Solve a passo for every particle."""
-    
-    # Detect edge-hitting and colisao of every particle
-    for i in range(len(lista_particulas)):
-        lista_particulas[i].colisao_paredes(passo,size)
-        for j in range(i+1,len(lista_particulas)):
-                lista_particulas[i].realiza_colisao(lista_particulas[j],passo)    
-
-                
-    # Computa a posicao de todas particulas  
-    for particula in lista_particulas:
-        particula.prox_passo(passo)
-        
-
-
-
+######################################################################################################################################################   
 def gerar_particulas(N, raio, massa, tamanho_caixa, tipo):
     """Generate N Particle objects in a random way in a list."""
     lista_particulas = []
@@ -136,42 +126,6 @@ def gerar_particulas(N, raio, massa, tamanho_caixa, tipo):
         lista_particulas.append(nova_particula)
     return lista_particulas
 
-#########################################################################################################################################################
-#                                                                                                                                                       #
-#                                                                    Reação                                                                             #
-#                                                                                                                                                       #
-#########################################################################################################################################################
-
-
-def simular_reacao(lista_particulas, probabilidade_reacao, passo):    
-    for particula1, particula2 in combinations(lista_particulas, 2):
-                
-        if particula1.checar_colisão(particula2) and particula1.tipo == 'atomo' and particula2.tipo == 'atomo':
-
-            valor_aleatorio = 0
-
-            if valor_aleatorio < probabilidade_reacao:
-                nova_massa = particula1.massa + particula2.massa
-                nova_posicao = (particula1.posicao + particula2.posicao) / 2 #centro de massa
-                nova_velocidade = (particula1.massa * particula1.velocidade + particula2.massa * particula2.velocidade) / nova_massa
-                nova_particula = Particula(
-                    massa=nova_massa,
-                    raio=(particula1.raio**3 + particula2.raio**3)**(1/3),  # Lei da conservação de volume
-                    tipo='molecula',
-                    posicao=nova_posicao,
-                    velocidade=nova_velocidade
-                ) 
-                
-                lista_particulas.remove(particula1)
-                lista_particulas.remove(particula2)
-                lista_particulas.append(nova_particula)
-                return nova_particula
-            else:
-                #colisão elastica
-                return realiza_colisao(particula1, particula2, passo)
-    else:
-        # Não houve colisão
-        return None   
 
 #########################################################################################################################################################
 #                                                                                                                                                       #
@@ -258,7 +212,51 @@ def gerar_particulas_dois_sistemas(N, raio, massa, tamanho_caixa, tipo):
 
 
 def exponencial(t, a, k, c):
-    return a * np.exp(-k * t) 
+    return a * np.exp(-k * t) + c
 
-#########################################################################################################################################################################################
+#################################################################################################
+    
+def simular_reacao(lista_particulas, probabilidade_reacao):    
+    for particula1, particula2 in combinations(lista_particulas, 2):
+        
+        if particula1.checar_colisão(particula2) and particula1.tipo == 'atomo' and particula2.tipo == 'atomo':
+            
+            dot_product = np.dot(particula1.orientacao.flatten(), particula2.orientacao.flatten())
+            
+            if dot_product < -0.8:  # Verifica se os vetores estão "de frente" um para o outro
+                valor_aleatorio = np.random.rand()
+                
+                if valor_aleatorio < probabilidade_reacao:
+                    nova_massa = particula1.massa + particula2.massa
+                    nova_posicao = (particula1.posicao + particula2.posicao) / 2  # Centro de massa
+                    nova_velocidade = (particula1.massa * particula1.velocidade + particula2.massa * particula2.velocidade) / nova_massa
+                    nova_particula = Particula(
+                        massa=nova_massa,
+                        raio=(particula1.raio**3 + particula2.raio**3)**(1/3),  # Lei da conservação de volume
+                        tipo='molecula',
+                        posicao=nova_posicao,
+                        velocidade=nova_velocidade
+                    ) 
+                    
+                    lista_particulas.remove(particula1)
+                    lista_particulas.remove(particula2)
+                    lista_particulas.append(nova_particula)
+                    return nova_particula
+                else:
+                    # Colisão elástica
+                    return realiza_colisao(particula1, particula2, passo)
+
+        else:
+            # Não houve colisão
+            return None
+
+
+def mudar_passo(lista_particulas, passo, size, probabilidade_reacao):
+    for i in range(len(lista_particulas)):
+        lista_particulas[i].colisao_paredes(passo, size)
+        for j in range(i + 1, len(lista_particulas)):
+            lista_particulas[i].realiza_colisao(lista_particulas[j], passo)
+    for particula in lista_particulas:
+        particula.prox_passo(passo)
+
 

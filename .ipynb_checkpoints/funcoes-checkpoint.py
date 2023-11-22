@@ -143,7 +143,7 @@ def gerar_particulas(N, raio, massa, tamanho_caixa, tipo):
 #########################################################################################################################################################
 
 
-def simular_reacao(lista_particulas, probabilidade_reacao):    
+def simular_reacao(lista_particulas, probabilidade_reacao, passo):    
     for particula1, particula2 in combinations(lista_particulas, 2):
                 
         if particula1.checar_colisão(particula2) and particula1.tipo == 'atomo' and particula2.tipo == 'atomo':
@@ -258,76 +258,7 @@ def gerar_particulas_dois_sistemas(N, raio, massa, tamanho_caixa, tipo):
 
 
 def exponencial(t, a, k, c):
-    return a * np.exp(-k * t) + c
+    return a * np.exp(-k * t) 
 
+#########################################################################################################################################################################################
 
-
-#########################################################################################################################################################
-#                                                                                                                                                       #
-#                                                                    Catalisador                                                                        #
-#                                                                                                                                                       #
-#########################################################################################################################################################
-
-
-
-
-# Classe Particula_Catalisador
-class Particula_Catalisador:
-    def __init__(self, massa, raio, posicao, velocidade, tipo='parede'):
-        self.tipo = tipo
-        self.massa = massa
-        self.raio = raio
-        self.posicao = np.array(posicao)
-        self.velocidade = np.array(velocidade)
-
-    def checar_colisao(self, particle):
-        r1, r2 = self.raio, particle.raio
-        x1, x2 = self.posicao, particle.posicao
-        di = x2 - x1
-        norm = np.linalg.norm(di)
-
-        if norm - (r1 + r2) * 1.1 < 0:
-            return True
-        else:
-            return False
-
-    def realiza_colisao(self, particle, passo):
-        m1, m2 = self.massa, particle.massa
-        r1, r2 = self.raio, particle.raio
-        v1, v2 = self.velocidade, particle.velocidade
-        x1, x2 = self.posicao, particle.posicao
-        di = x1 - x2
-        norm = np.linalg.norm(di)
-        
-        if norm - (r1 + r2) * 1.1 < passo * abs(np.dot(v1 - v2, di)) / norm:
-            self.velocidade = v1 - 2. * m2 / (m1 + m2) * np.dot(v1 - v2, di) / (np.linalg.norm(di) ** 2.) * di
-            particle.velocidade = v2 - 2. * m1 / (m2 + m1) * np.dot(v2 - v1, (-di)) / (np.linalg.norm(di) ** 2.) * (-di)
-
-    def colisao_paredes(self, passo, size):
-        r, v, x = self.raio, self.velocidade, self.posicao
-        projx = passo * abs(np.dot(v, np.array([1., 0.])))
-        projy = passo * abs(np.dot(v, np.array([0., 1.])))
-        if abs(x[0]) - r < projx or abs(size - x[0]) - r < projx:
-            self.velocidade[0] *= -1
-        if abs(x[1]) - r < projy or abs(size - x[1]) - r < projy:
-            self.velocidade[1] *= -1.
-
-# Função para verificar colisões com a parede
-def verifica_colisao_parede(particula, size):
-    r = particula.raio
-    x = particula.posicao
-    v = particula.velocidade
-    projx = abs(np.dot(v, np.array([1., 0.])))
-    projy = abs(np.dot(v, np.array([0., 1.])))
-
-    if abs(x[0]) - r < projx or abs(size - x[0]) - r < projx:
-        return True
-    if abs(x[1]) - r < projy or abs(size - x[1]) - r < projy:
-        return True
-    return False
-
-# Função para modificar a probabilidade de reação se a partícula colidir com a parede
-def mudar_probabilidade(particula, probabilidade, taxa_aumento):
-    if verifica_colisao_parede(particula, size):
-        probabilidade *= taxa_aumento
-    return probabilidade  

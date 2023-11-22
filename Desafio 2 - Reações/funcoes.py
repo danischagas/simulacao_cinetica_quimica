@@ -79,8 +79,11 @@ class Particula:
         projy = passo*abs(np.dot(v,np.array([0.,1.])))
         if abs(x[0])-r < projx or abs(size-x[0])-r < projx:
             self.velocidade[0] *= -1
+
+            
         if abs(x[1])-r < projy or abs(size-x[1])-r < projy:
             self.velocidade[1] *= -1.
+
             
        
             
@@ -103,6 +106,7 @@ def mudar_passo(lista_particulas, passo, size):
     # Computa a posicao de todas particulas  
     for particula in lista_particulas:
         particula.prox_passo(passo)
+        
 
 
 
@@ -139,12 +143,13 @@ def gerar_particulas(N, raio, massa, tamanho_caixa, tipo):
 #########################################################################################################################################################
 
 
-def simular_reacao(lista_particulas, probabilidade_reacao):    
+def simular_reacao(lista_particulas, probabilidade_reacao, passo):    
     for particula1, particula2 in combinations(lista_particulas, 2):
                 
         if particula1.checar_colisão(particula2) and particula1.tipo == 'atomo' and particula2.tipo == 'atomo':
 
-            valor_aleatorio = 0
+#             valor_aleatorio = 0
+            valor_aleatorio = rd.random()
 
             if valor_aleatorio < probabilidade_reacao:
                 nova_massa = particula1.massa + particula2.massa
@@ -164,7 +169,9 @@ def simular_reacao(lista_particulas, probabilidade_reacao):
                 return nova_particula
             else:
                 #colisão elastica
-                return realiza_colisao(particula1, particula2, passo)
+#                 return realiza_colisao(particula1, particula2, passo)
+                return particula1.realiza_colisao(particula2, passo)
+
     else:
         # Não houve colisão
         return None   
@@ -253,303 +260,8 @@ def gerar_particulas_dois_sistemas(N, raio, massa, tamanho_caixa, tipo):
 
 
 
-def exponencial(t, a, k, c):
-    return a * np.exp(-k * t) + c
+def exponencial(t, a, k):
+    return a * np.exp(-k * t) 
 
+#########################################################################################################################################################################################
 
-class Catalisador(Particula):
-    def __init__(self, massa, raio, posicao, velocidade):
-        super().__init__(massa, raio, posicao, velocidade, tipo='catalisador')
-        self.ativo = True  # Indica se o catalisador está ativo
-
-    def desativar(self):
-        self.ativo = False
-
-    def reativar(self):
-        self.ativo = True
-
-    # Adicione outras funcionalidades específicas para catalisadores, se necessário
-
-    
-#def mudar_passooooo(lista_particulas, passo, size, probabilidade_reacao, taxa_aumento_prob):
-#    """Solve a passo for every particle."""
-    
-    # Detect edge-hitting and colisao of every particle
-#for particula in lista_particulas:
-#     particula.colisao_paredes(passo, size)
-        
-        # Aumenta a probabilidade de reação se a partícula colidir com a parede
-#    if particula.checar_colisao_parede(size):
-#        probabilidade_reacao *= taxa_aumento_prob
-        
-#    for i in range(len(lista_particulas)):
-#        for j in range(i + 1, len(lista_particulas)):
-#            lista_particulas[i].realiza_colisao(lista_particulas[j], passo)    
-
-    # Computa a posicao de todas particulas  
-#    for particula in lista_particulas:
-#        particula.prox_passo(passo)
-#
-#    return probabilidade_reacao
-
-#########################################################################################################################################################
-#                                                                                                                                                       #
-#                                                                    Catalisador                                                                        #
-#                                                                                                                                                       #
-#########################################################################################################################################################
-
-class Particula_Catalisadores:
-    """Define physics of elastic colisao."""
-    
-    def __init__(self, massa, raio, posicao, velocidade, tipo = 'atomo', categoria='particula'):
-        """Initialize a Particle object
-        
-        massa the massa of particle
-        raio the raio of particle
-        posicao the posicao vector of particle
-        velocidade the velocidade vector of particle
-        """
-        self.tipo = tipo
-        self.massa = massa
-        self.raio = raio
-        self.categoria = categoria  # 'particula' ou 'parede'
-        
-        # last posicao and velocidade
-        self.posicao = np.array(posicao)
-        self.velocidade = np.array(velocidade)
-        
-        # all posicao and velocities recorded during the simulation
-        self.todas_posicoes = [np.copy(self.posicao)]
-        self.todas_velocidades = [np.copy(self.velocidade)]
-        self.todas_magnitudesv = [np.linalg.norm(np.copy(self.velocidade))]
-        
-    def prox_passo(self, passo):
-        """Compute posicao of next passo."""
-        self.posicao += passo * self.velocidade
-        self.todas_posicoes.append(np.copy(self.posicao)) 
-        self.todas_velocidades.append(np.copy(self.velocidade)) 
-        self.todas_magnitudesv.append(np.linalg.norm(np.copy(self.velocidade))) 
-    
-    def checar_colisão(self, particle):
-        """Check if there is a colisao with another particle."""
-        
-        r1, r2 = self.raio, particle.raio
-        x1, x2 = self.posicao, particle.posicao
-        di = x2-x1
-        norm = np.linalg.norm(di)
-
-        if norm-(r1+r2)*1.1 < 0:
-            return True
-        else:
-            return False
-        
-#         return np.hypot(*(self.raio*2-particle.raio*2)) < self.raio*2 + particle.raio*2
-
-    def checar_colisao_parede(self, size):
-            """Check if there is a colisao with the wall."""
-            r = self.raio
-            x = self.posicao
-            v = self.velocidade
-            projx = abs(np.dot(v, np.array([1., 0.])))
-            projy = abs(np.dot(v, np.array([0., 1.])))
-
-            if abs(x[0]) - r < projx or abs(size - x[0]) - r < projx:
-                return True
-            if abs(x[1]) - r < projy or abs(size - x[1]) - r < projy:
-                return True
-            return False
-
-
-
-    def realiza_colisao(self, particle, passo):
-        """Compute velocidade after colisao with another particle."""
-        m1, m2 = self.massa, particle.massa
-        r1, r2 = self.raio, particle.raio
-        v1, v2 = self.velocidade, particle.velocidade
-        x1, x2 = self.posicao, particle.posicao
-        di = x1-x2 # mudamos para ficar igual a fórmula
-        norm = np.linalg.norm(di)
-        if norm-(r1+r2)*1.1 < passo*abs(np.dot(v1-v2, di))/norm:
-            self.velocidade = v1 - 2. * m2/(m1+m2) * np.dot(v1-v2, di) / (np.linalg.norm(di)**2.) * di
-            particle.velocidade = v2 - 2. * m1/(m2+m1) * np.dot(v2-v1, (-di)) / (np.linalg.norm(di)**2.) * (-di)
-            
-
-    def colisao_paredes(self, passo, size):
-        """Compute velocidade after hitting an edge.
-        passo the computation passo
-        size the medium size
-        """
-        r, v, x = self.raio, self.velocidade, self.posicao
-        projx = passo*abs(np.dot(v,np.array([1.,0.])))
-        projy = passo*abs(np.dot(v,np.array([0.,1.])))
-        if abs(x[0])-r < projx or abs(size-x[0])-r < projx:
-            self.velocidade[0] *= -1
-        if abs(x[1])-r < projy or abs(size-x[1])-r < projy:
-            self.velocidade[1] *= -1
-            
-            
-def mudar_passo_catalisador(lista_particulas, passo, size, probabilidade_reacao, taxa_aumento_prob):
-    """Solve a passo for every particle."""
-    
-    # Detect edge-hitting and colisao of every particle
-    for particula in lista_particulas:
-        particula.colisao_paredes(passo, size)
-        
-        # Aumenta a probabilidade de reação se a partícula colidir com a parede
-        if particula.checar_colisao_parede(size):
-            probabilidade_reacao *= taxa_aumento_prob
-        
-    for i in range(len(lista_particulas)):
-        for j in range(i + 1, len(lista_particulas)):
-            lista_particulas[i].realiza_colisao(lista_particulas[j], passo)    
-
-    # Computa a posicao de todas particulas  
-    for particula in lista_particulas:
-        particula.prox_passo(passo)
-
-    return probabilidade_reacao
-
-
-            
-import numpy as np
-from itertools import combinations
-
-class Particula:
-    # ... (o resto da sua classe Particula permanece inalterado)
-
-    def checar_colisao_parede(self, size):
-        """Check if there is a colisao with the wall."""
-        r = self.raio
-        x = self.posicao
-        v = self.velocidade
-        projx = abs(np.dot(v, np.array([1., 0.])))
-        projy = abs(np.dot(v, np.array([0., 1.])))
-        
-        if abs(x[0]) - r < projx or abs(size - x[0]) - r < projx:
-            return True
-        if abs(x[1]) - r < projy or abs(size - x[1]) - r < projy:
-            return True
-        return False
-
-
-def mudar_passo(lista_particulas, passo, size, probabilidade_reacao, taxa_aumento_prob):
-    """Solve a passo for every particle."""
-    
-    # Detect edge-hitting and colisao of every particle
-    for particula in lista_particulas:
-        particula.colisao_paredes(passo, size)
-        
-        # Aumenta a probabilidade de reação se a partícula colidir com a parede
-        if particula.checar_colisao_parede(size):
-            probabilidade_reacao *= taxa_aumento_prob
-        
-    for i in range(len(lista_particulas)):
-        for j in range(i + 1, len(lista_particulas)):
-            lista_particulas[i].realiza_colisao(lista_particulas[j], passo)    
-
-    # Computa a posicao de todas particulas  
-    for particula in lista_particulas:
-        particula.prox_passo(passo)
-
-    return probabilidade_reacao
-
-
-# Restante do seu código ...
-
-# Exemplo de como criar uma parede horizontal na posição y=0
-parede_inferior = Particula(massa=float('inf'), raio=1.0, posicao=[0.0, 0.0], velocidade=np.zeros(2), tipo='parede')
-
-# Adicione a parede à sua lista de partículas
-lista_particulas.append(parede_inferior)
-
-# Inicialize a probabilidade de reação e a taxa de aumento
-probabilidade_reacao = 0.1
-taxa_aumento_prob = 2.0
-
-# No loop principal, chame mudar_passo com os parâmetros atualizados
-# Certifique-se de passar probabilidade_reacao e taxa_aumento_prob para a função
-for i in range(num_passos):
-    probabilidade_reacao = mudar_passo(lista_particulas, passo, size, probabilidade_reacao, taxa_aumento_prob)
-    simular_reacao(lista_particulas, probabilidade_reacao)
-
--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------# Classe Particula_Catalisador
-class Particula_Catalisador:
-    def __init__(self, massa, raio, posicao, velocidade, tipo='parede'):
-        self.tipo = tipo
-        self.massa = massa
-        self.raio = raio
-        self.posicao = np.array(posicao)
-        self.velocidade = np.array(velocidade)
-
-    def checar_colisao(self, particle):
-        r1, r2 = self.raio, particle.raio
-        x1, x2 = self.posicao, particle.posicao
-        di = x2 - x1
-        norm = np.linalg.norm(di)
-
-        if norm - (r1 + r2) * 1.1 < 0:
-            return True
-        else:
-            return False
-
-    def realiza_colisao(self, particle, passo):
-        m1, m2 = self.massa, particle.massa
-        r1, r2 = self.raio, particle.raio
-        v1, v2 = self.velocidade, particle.velocidade
-        x1, x2 = self.posicao, particle.posicao
-        di = x1 - x2
-        norm = np.linalg.norm(di)
-        
-        if norm - (r1 + r2) * 1.1 < passo * abs(np.dot(v1 - v2, di)) / norm:
-            self.velocidade = v1 - 2. * m2 / (m1 + m2) * np.dot(v1 - v2, di) / (np.linalg.norm(di) ** 2.) * di
-            particle.velocidade = v2 - 2. * m1 / (m2 + m1) * np.dot(v2 - v1, (-di)) / (np.linalg.norm(di) ** 2.) * (-di)
-
-    def colisao_paredes(self, passo, size):
-        r, v, x = self.raio, self.velocidade, self.posicao
-        projx = passo * abs(np.dot(v, np.array([1., 0.])))
-        projy = passo * abs(np.dot(v, np.array([0., 1.])))
-        if abs(x[0]) - r < projx or abs(size - x[0]) - r < projx:
-            self.velocidade[0] *= -1
-        if abs(x[1]) - r < projy or abs(size - x[1]) - r < projy:
-            self.velocidade[1] *= -1.
-
-# Função para verificar colisões com a parede
-def verifica_colisao_parede(particula, size):
-    r = particula.raio
-    x = particula.posicao
-    v = particula.velocidade
-    projx = abs(np.dot(v, np.array([1., 0.])))
-    projy = abs(np.dot(v, np.array([0., 1.])))
-
-    if abs(x[0]) - r < projx or abs(size - x[0]) - r < projx:
-        return True
-    if abs(x[1]) - r < projy or abs(size - x[1]) - r < projy:
-        return True
-    return False
-
-# Função para modificar a probabilidade de reação se a partícula colidir com a parede
-def mudar_probabilidade(particula, probabilidade, taxa_aumento):
-    if verifica_colisao_parede(particula, size):
-        probabilidade *= taxa_aumento
-    return probabilidade
-
-
-
----------------------------
-# Seu código de simulação ...
-
-# Exemplo de criação de uma parede vertical na posição x=0
-parede_vertical = Particula_Catalisador(massa=float('inf'), raio=1.0, posicao=[0.0, 0.0], velocidade=np.zeros(2), tipo='parede')
-
-# Adicione a parede à sua lista de partículas
-lista_particulas.append(parede_vertical)
-
-# No loop principal, chame mudar_probabilidade com os parâmetros atualizados
-# Certifique-se de passar a partícula e a probabilidade atual para a função
-for i in range(num_passos):
-    for particula in lista_particulas:
-        probabilidade_reacao = mudar_probabilidade(particula, probabilidade_reacao, taxa_aumento_prob)
-    
-    # Resto do seu código de simulação
-    # Certifique
-    

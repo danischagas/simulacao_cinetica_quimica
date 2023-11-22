@@ -148,7 +148,8 @@ def simular_reacao(lista_particulas, probabilidade_reacao, passo):
                 
         if particula1.checar_colisão(particula2) and particula1.tipo == 'atomo' and particula2.tipo == 'atomo':
 
-            valor_aleatorio = 0
+#             valor_aleatorio = 0
+            valor_aleatorio = rd.random()
 
             if valor_aleatorio < probabilidade_reacao:
                 nova_massa = particula1.massa + particula2.massa
@@ -168,7 +169,9 @@ def simular_reacao(lista_particulas, probabilidade_reacao, passo):
                 return nova_particula
             else:
                 #colisão elastica
-                return realiza_colisao(particula1, particula2, passo)
+#                 return realiza_colisao(particula1, particula2, passo)
+                return particula1.realiza_colisao(particula2, passo)
+
     else:
         # Não houve colisão
         return None   
@@ -257,7 +260,7 @@ def gerar_particulas_dois_sistemas(N, raio, massa, tamanho_caixa, tipo):
 
 
 
-def exponencial(t, a, k, c):
+def exponencial(t, a, k):
     return a * np.exp(-k * t) 
 
 #########################################################################################################################################################################################
