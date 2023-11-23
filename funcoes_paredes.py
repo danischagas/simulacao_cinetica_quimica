@@ -149,7 +149,7 @@ def gerar_particulas(N, raio, massa, tamanho_caixa, tipo):
 #########################################################################################################################################################
 
 
-def simular_reacao(lista_particulas, probabilidade_reacao):    
+def simular_reacao(lista_particulas, probabilidade_reacao, passo):    
     for particula1, particula2 in combinations(lista_particulas, 2):
                 
         if particula1.checar_colisão(particula2) and particula1.tipo == 'atomo' and particula2.tipo == 'atomo':
